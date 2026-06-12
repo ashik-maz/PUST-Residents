@@ -3,6 +3,15 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { CreditCard, History, User as UserIcon, Bell, Download, CheckCircle, XCircle } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { AxiosError } from 'axios';
+
+interface Payment {
+  _id: string;
+  transactionId: string;
+  amount: number;
+  createdAt: string;
+  voucherUrl?: string;
+}
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -32,8 +41,9 @@ const Dashboard = () => {
         window.location.href = data.url; // Redirect to SSLCommerz Gateway
       }
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || error.message || 'Failed to initialize payment';
+    onError: (error: unknown) => {
+      const axiosError = error as AxiosError<{ message: string }>;
+      const message = axiosError.response?.data?.message || axiosError.message || 'Failed to initialize payment';
       alert(message);
     }
   });
@@ -133,7 +143,7 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y text-sm">
-                  {paymentHistory?.map((payment: any) => (
+                  {paymentHistory?.map((payment: Payment) => (
                     <tr key={payment._id} className="hover:bg-gray-50 transition">
                       <td className="px-6 py-4 font-mono text-xs">{payment.transactionId}</td>
                       <td className="px-6 py-4 font-bold text-teal-700">{payment.amount} BDT</td>

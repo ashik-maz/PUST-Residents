@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { CreditCard, Users, TrendingUp, History, CheckCircle, XCircle } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
+import { AxiosError } from 'axios';
 
 interface Payment {
   _id: string;
@@ -52,8 +53,9 @@ const Dashboard = () => {
         window.location.href = data.url;
       }
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || error.message || 'Failed to initialize payment';
+    onError: (error: unknown) => {
+      const axiosError = error as AxiosError<{ message: string }>;
+      const message = axiosError.response?.data?.message || axiosError.message || 'Failed to initialize payment';
       alert(message);
     }
   });

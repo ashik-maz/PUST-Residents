@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { User as UserIcon, Book, Hash, ShieldCheck, Edit3, Save, X } from 'lucide-react';
 import api from '../services/api';
 import { useMutation } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 
 const Profile = () => {
   const { user, login } = useAuth();
@@ -24,8 +25,9 @@ const Profile = () => {
       setIsEditing(false);
       alert('Profile updated successfully!');
     },
-    onError: (error: any) => {
-      alert(error.response?.data?.message || 'Failed to update profile');
+    onError: (error: unknown) => {
+      const axiosError = error as AxiosError<{ message: string }>;
+      alert(axiosError.response?.data?.message || 'Failed to update profile');
     }
   });
 
@@ -35,14 +37,16 @@ const Profile = () => {
     updateMutation.mutate(formData);
   };
 
+  type FormField = keyof typeof formData;
+
   const profileItems = [
-    { icon: <UserIcon className="text-blue-500" />, label: 'Full Name', value: user.fullName, field: 'fullName' },
+    { icon: <UserIcon className="text-blue-500" />, label: 'Full Name', value: user.fullName, field: 'fullName' as FormField },
     { icon: <Hash className="text-purple-500" />, label: 'Student ID', value: user.studentId, permanent: true },
     { icon: <ShieldCheck className="text-green-500" />, label: 'Role', value: user.role, permanent: true },
     { icon: <Book className="text-orange-500" />, label: 'Hall Name', value: user.hallName || 'N/A', permanent: true },
-    { icon: <Book className="text-indigo-500" />, label: 'Department', value: user.department || 'Not Set', field: 'department' },
-    { icon: <Hash className="text-pink-500" />, label: 'Session', value: user.session || 'Not Set', field: 'session' },
-    { icon: <Hash className="text-yellow-500" />, label: 'Room Number', value: user.roomNumber || 'Not Set', field: 'roomNumber' },
+    { icon: <Book className="text-indigo-500" />, label: 'Department', value: user.department || 'Not Set', field: 'department' as FormField },
+    { icon: <Hash className="text-pink-500" />, label: 'Session', value: user.session || 'Not Set', field: 'session' as FormField },
+    { icon: <Hash className="text-yellow-500" />, label: 'Room Number', value: user.roomNumber || 'Not Set', field: 'roomNumber' as FormField },
   ];
 
   return (
@@ -102,7 +106,7 @@ const Profile = () => {
                         <input
                           type="text"
                           className="w-full mt-1 border-b border-gray-300 focus:border-[#004d40] outline-none py-1 font-semibold text-gray-900 bg-transparent"
-                          value={(formData as any)[item.field]}
+                          value={formData[item.field]}
                           onChange={(e) => setFormData({ ...formData, [item.field!]: e.target.value })}
                         />
                       ) : (

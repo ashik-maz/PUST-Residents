@@ -30,11 +30,13 @@ const Residents = () => {
     allottedDate: new Date().toISOString().split('T')[0],
   });
 
+  // Keep effect to sync hallName if user context loads later
   useEffect(() => {
-    if (user?.hallName) {
+    if (user?.hallName && formData.hallName !== user.hallName) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData(prev => ({ ...prev, hallName: user.hallName! }));
     }
-  }, [user]);
+  }, [user?.hallName, formData.hallName]);
 
   const queryClient = useQueryClient();
 

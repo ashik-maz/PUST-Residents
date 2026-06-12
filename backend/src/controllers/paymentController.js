@@ -218,7 +218,7 @@ const initPayment = async (req, res) => {
 // @route   POST /api/payments/success/:tranId
 const paymentSuccess = async (req, res) => {
   const { tranId } = req.params;
-  const { card_type } = req.body; // Capture payment method from SSLCommerz
+  const card_type = req.body?.card_type || 'Online'; // Safely extract payment method
 
   try {
     const transaction = await Transaction.findOne({ transactionId: tranId });

@@ -19,6 +19,7 @@ const app = express();
 
 // Body parser
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Added to parse SSLCommerz POST callbacks
 
 // Enable CORS
 const allowedOrigins = [

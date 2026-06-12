@@ -100,7 +100,7 @@ const getProfile = async (req, res) => {
 // @access  Private
 const updateProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select('+password');
 
     if (user) {
       user.fullName = req.body.fullName || user.fullName;
@@ -108,7 +108,7 @@ const updateProfile = async (req, res) => {
       user.session = req.body.session || user.session;
       user.roomNumber = req.body.roomNumber || user.roomNumber;
 
-      if (req.body.password) {
+      if (req.body.password && req.body.password.trim().length >= 6) {
         user.password = req.body.password;
       }
 
@@ -129,7 +129,8 @@ const updateProfile = async (req, res) => {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Update Profile Error:', error);
+    res.status(400).json({ message: error.message || 'Update failed' });
   }
 };
 

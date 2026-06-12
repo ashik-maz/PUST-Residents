@@ -95,6 +95,44 @@ const getProfile = async (req, res) => {
   }
 };
 
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.fullName = req.body.fullName || user.fullName;
+      user.department = req.body.department || user.department;
+      user.session = req.body.session || user.session;
+      user.roomNumber = req.body.roomNumber || user.roomNumber;
+
+      if (req.body.password) {
+        user.password = req.body.password;
+      }
+
+      const updatedUser = await user.save();
+
+      res.json({
+        _id: updatedUser._id,
+        fullName: updatedUser.fullName,
+        studentId: updatedUser.studentId,
+        role: updatedUser.role,
+        hallName: updatedUser.hallName,
+        department: updatedUser.department,
+        session: updatedUser.session,
+        roomNumber: updatedUser.roomNumber,
+        token: generateToken(updatedUser._id),
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -106,4 +144,5 @@ module.exports = {
   register,
   login,
   getProfile,
+  updateProfile,
 };

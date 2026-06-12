@@ -58,6 +58,9 @@ const login = async (req, res) => {
         studentId: user.studentId,
         role: user.role,
         hallName: user.hallName,
+        department: user.department,
+        session: user.session,
+        roomNumber: user.roomNumber,
         token: generateToken(user._id),
       });
     } else {

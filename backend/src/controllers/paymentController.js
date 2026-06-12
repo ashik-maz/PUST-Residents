@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Due = require('../models/Due');
 const Transaction = require('../models/Transaction');
+const Settings = require('../models/Settings');
 const { generateTransactionId } = require('../utils/generateId');
 const { generateVoucher } = require('../services/pdfService');
 

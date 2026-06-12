@@ -6,6 +6,9 @@ interface User {
   studentId: string;
   role: 'Provost' | 'Co-Provost' | 'Student';
   hallName?: string;
+  department?: string;
+  session?: string;
+  roomNumber?: string;
   token: string;
 }
 

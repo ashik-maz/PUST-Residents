@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { CreditCard, Users, TrendingUp, History } from 'lucide-react';
+import { CreditCard, Users, TrendingUp, History, CheckCircle, XCircle } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 
 interface Payment {
   _id: string;
@@ -16,6 +17,8 @@ interface Payment {
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const paymentStatus = searchParams.get('payment');
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['analytics'],
@@ -35,11 +38,39 @@ const Dashboard = () => {
     enabled: user?.role === 'Student',
   });
 
+  const paymentMutation = useMutation({
+    mutationFn: async () => {
+      const { data } = await api.post('/payments/init', { studentId: user?.studentId });
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || 'Failed to initialize payment');
+    }
+  });
+
   if (analyticsLoading || duesLoading) return <div>Loading dashboard...</div>;
 
   if (user?.role === 'Student') {
     return (
       <div className="space-y-6">
+        {paymentStatus === 'success' && (
+          <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center gap-3 animate-bounce">
+            <CheckCircle className="text-green-500" />
+            <span>Payment successful! Your records have been updated.</span>
+          </div>
+        )}
+        {paymentStatus === 'fail' && (
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center gap-3">
+            <XCircle className="text-red-500" />
+            <span>Payment failed. Please try again.</span>
+          </div>
+        )}
+
         <h1 className="text-2xl font-bold text-gray-800">Welcome, {user.fullName}</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -47,8 +78,17 @@ const Dashboard = () => {
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <CreditCard className="text-primary" /> Current Dues
             </h2>
-            <p className="text-4xl font-bold text-red-600">{studentDues?.totalDue} BDT</p>
-            <p className="text-sm text-gray-500 mt-2">Please pay your dues to the hall office.</p>
+            <div className="mb-6">
+              <p className="text-4xl font-bold text-red-600">{studentDues?.totalDue} BDT</p>
+              <p className="text-sm text-gray-500 mt-2">All dues must be paid in full.</p>
+            </div>
+            <button 
+              className="w-full bg-[#004d40] text-white py-3 rounded-lg font-bold hover:bg-opacity-90 transition shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed"
+              disabled={studentDues?.totalDue === 0 || paymentMutation.isPending}
+              onClick={() => paymentMutation.mutate()}
+            >
+              {paymentMutation.isPending ? 'Processing...' : 'Pay Now'}
+            </button>
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">

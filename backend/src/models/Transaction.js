@@ -32,6 +32,17 @@ const transactionSchema = new mongoose.Schema({
     enum: ['Pending', 'Completed', 'Failed'],
     default: 'Pending',
   },
+  paymentMethod: {
+    type: String,
+  },
+  monthRange: {
+    type: String,
+  },
+  details: [{
+    type: { type: String },
+    amount: Number,
+    count: Number,
+  }],
   collectedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

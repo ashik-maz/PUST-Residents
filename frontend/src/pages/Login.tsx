@@ -25,11 +25,13 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-lg">
-        <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">PUST Hall Payment</h2>
-          <p className="mt-2 text-sm text-gray-600">Sign in to your account</p>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-xl border border-gray-100">
+        <div className="text-center space-y-2">
+          <img src="/pust_logo.png" alt="PUST Logo" className="w-24 h-24 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-[#004d40]">Pabna University of Science and Engineering</h1>
+          <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">PUST Residents</h2>
+          <p className="text-sm text-gray-500">Sign in to access your dashboard</p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && <div className="p-3 text-sm text-red-700 bg-red-100 rounded">{error}</div>}

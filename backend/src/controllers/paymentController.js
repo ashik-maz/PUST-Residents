@@ -138,7 +138,29 @@ const initPayment = async (req, res) => {
     }
 
     const tran_id = generateTransactionId();
+
+    // Calculate month range and details for voucher
+    const months = unpaidDues
+      .filter(d => d.type === 'Monthly')
+      .sort((a, b) => (a.year * 12 + a.month) - (b.year * 12 + b.month));
     
+    let monthRange = 'N/A';
+    if (months.length > 0) {
+      const start = months[0];
+      const end = months[months.length - 1];
+      monthRange = `${start.month}/${start.year % 100} to ${end.month}/${end.year % 100}`;
+    }
+
+    // Breakdown for Bengali voucher
+    const details = [];
+    const monthlyCount = months.length;
+    if (monthlyCount > 0) {
+      const settings = await Settings.findOne();
+      const hallFees = settings.monthlyFees[student.hallName];
+      details.push({ type: 'Seat Rent', amount: hallFees.seatRent, count: monthlyCount });
+      details.push({ type: 'Establishment', amount: hallFees.establishment, count: monthlyCount });
+    }
+
     const data = {
       total_amount: totalAmount,
       currency: 'BDT',
@@ -173,8 +195,10 @@ const initPayment = async (req, res) => {
       transactionId: tran_id,
       student: student._id,
       amount: totalAmount,
-      previousDue: totalAmount, // Added this required field
+      previousDue: totalAmount,
       status: 'Pending',
+      monthRange,
+      details,
       dues: unpaidDues.map(d => d._id),
     });
 
@@ -193,6 +217,8 @@ const initPayment = async (req, res) => {
 // @route   POST /api/payments/success/:tranId
 const paymentSuccess = async (req, res) => {
   const { tranId } = req.params;
+  const { card_type } = req.body; // Capture payment method from SSLCommerz
+
   try {
     const transaction = await Transaction.findOne({ transactionId: tranId });
     if (!transaction) return res.status(404).send('Transaction not found');
@@ -201,6 +227,7 @@ const paymentSuccess = async (req, res) => {
 
     transaction.status = 'Completed';
     transaction.paymentDate = new Date();
+    transaction.paymentMethod = card_type || 'Online';
     
     // Mark dues as paid
     await Due.updateMany(

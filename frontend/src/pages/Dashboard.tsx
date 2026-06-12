@@ -41,10 +41,6 @@ const Dashboard = () => {
 
   const paymentMutation = useMutation({
     mutationFn: async () => {
-      // Profile completion check
-      if (!user?.fullName || !user?.studentId || !user?.department || !user?.session || !user?.roomNumber) {
-        throw new Error('Please complete your profile (Name, ID, Dept, Session, Room) before making a payment.');
-      }
       const { data } = await api.post('/payments/init', { studentId: user?.studentId });
       return data;
     },

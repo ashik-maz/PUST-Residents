@@ -36,7 +36,8 @@ const Payments = () => {
       refetch();
       // Automatically open voucher in new tab
       if (response.data.voucherUrl) {
-        window.open(`http://localhost:5000${response.data.voucherUrl}`, '_blank');
+        const backendUrl = import.meta.env.PROD ? 'https://pust-residents.onrender.com' : 'http://localhost:5000';
+        window.open(`${backendUrl}${response.data.voucherUrl}`, '_blank');
       }
     },
     onError: (err: unknown) => {

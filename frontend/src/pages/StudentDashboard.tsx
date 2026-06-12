@@ -1,11 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { CreditCard, History, User as UserIcon, Bell, Download } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { CreditCard, History, User as UserIcon, Bell, Download, CheckCircle, XCircle } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const paymentStatus = searchParams.get('payment');
 
   const { data: studentDues, isLoading: duesLoading } = useQuery({
     queryKey: ['studentDues', user?.studentId],
@@ -14,6 +16,21 @@ const Dashboard = () => {
       return data;
     },
     enabled: user?.role === 'Student',
+  });
+
+  const paymentMutation = useMutation({
+    mutationFn: async () => {
+      const { data } = await api.post('/payments/init', { studentId: user?.studentId });
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url; // Redirect to SSLCommerz Gateway
+      }
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || 'Failed to initialize payment');
+    }
   });
 
   const { data: paymentHistory, isLoading: historyLoading } = useQuery({
@@ -29,6 +46,20 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
+      {/* Payment Status Alerts */}
+      {paymentStatus === 'success' && (
+        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center gap-3 animate-bounce">
+          <CheckCircle className="text-green-500" />
+          <span>Payment successful! Your records have been updated.</span>
+        </div>
+      )}
+      {paymentStatus === 'fail' && (
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center gap-3">
+          <XCircle className="text-red-500" />
+          <span>Payment failed. Please try again or contact the hall office.</span>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Welcome, {user?.fullName}</h1>
         <div className="bg-white p-2 rounded-full shadow-sm relative cursor-pointer hover:bg-gray-50">
@@ -52,10 +83,10 @@ const Dashboard = () => {
             </div>
             <button 
               className="w-full bg-[#004d40] text-white py-3 rounded-lg font-bold hover:bg-opacity-90 transition shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed"
-              disabled={studentDues?.totalDue === 0}
-              onClick={() => alert('Online payment integration coming soon! Please visit the hall office for payment.')}
+              disabled={studentDues?.totalDue === 0 || paymentMutation.isPending}
+              onClick={() => paymentMutation.mutate()}
             >
-              Pay Now
+              {paymentMutation.isPending ? 'Processing...' : 'Pay Now'}
             </button>
           </div>
 
@@ -105,7 +136,7 @@ const Dashboard = () => {
                       <td className="px-6 py-4">
                         {payment.voucherUrl && (
                           <a 
-                            href={`http://localhost:5000${payment.voucherUrl}`} 
+                            href={`${import.meta.env.PROD ? 'https://pust-residents.onrender.com' : 'http://localhost:5000'}${payment.voucherUrl}`} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 text-primary hover:underline font-medium"

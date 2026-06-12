@@ -29,7 +29,8 @@ const Reports = () => {
   });
 
   const handleExport = () => {
-    window.open(`http://localhost:5000/api/reports/export?startDate=${startDate}&endDate=${endDate}`, '_blank');
+    const backendUrl = import.meta.env.PROD ? 'https://pust-residents.onrender.com' : 'http://localhost:5000';
+    window.open(`${backendUrl}/api/reports/export?startDate=${startDate}&endDate=${endDate}`, '_blank');
   };
 
   return (

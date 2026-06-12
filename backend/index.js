@@ -21,7 +21,16 @@ const app = express();
 app.use(express.json());
 
 // Enable CORS
-app.use(cors());
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'https://pust-residents.vercel.app',
+  'http://localhost:5173'
+].filter(Boolean);
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 
 // Set static folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

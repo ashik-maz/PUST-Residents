@@ -173,6 +173,7 @@ const initPayment = async (req, res) => {
       transactionId: tran_id,
       student: student._id,
       amount: totalAmount,
+      previousDue: totalAmount, // Added this required field
       status: 'Pending',
       dues: unpaidDues.map(d => d._id),
     });

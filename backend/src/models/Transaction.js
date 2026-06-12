@@ -27,10 +27,15 @@ const transactionSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  status: {
+    type: String,
+    enum: ['Pending', 'Completed', 'Failed'],
+    default: 'Pending',
+  },
   collectedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: false, // Optional for online payments
   },
   dues: [{
     type: mongoose.Schema.Types.ObjectId,
